@@ -100,21 +100,35 @@ if __name__ == '__main__':
     print('[INFO] Démarrage Webcam')
     video_capture = cv2.VideoCapture(0)
     print('[INFO] Webcam démarrée')
+
+    positionZoomSave = [0,0,0,0]
     while True:
         ret, frame = video_capture.read()
         #enleve l'effect mirroir
         frame = cv2.flip(frame, 1)
         positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names)
         zero = 0
-        #affichage
+        # AFFICHAGE SANS SUIVI
         cv2.imshow('PRRD - caméra sans suivi ', frame)
+
+        # SUIVI
+
+        frame_zoom = frame
+        height, width, channels = frame_zoom.shape
+        # plus la variable Zoom est grande moins le zoom sera important
+        zoom = 99
+
         if positionZoom[0] == zero and positionZoom[1] == zero and positionZoom[2] == zero and positionZoom[3] == zero :
-            cv2.imshow('PRRD - caméra', frame)
+            if positionZoomSave[0] == zero and positionZoomSave[1] == zero and positionZoomSave[2] == zero and positionZoomSave[3] == zero :
+                cv2.imshow('PRRD - caméra', frame)
+            else: #On zomm la ou la dernière fois le prof à été détecté
+                minX, maxX = (positionZoomSave[0]), (positionZoomSave[2])
+                minY, maxY = (positionZoomSave[3]), (positionZoomSave[1])
+                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                resized_cropped_frame = cv2.resize(cropped, (width, height))
+                #cv2.imshow('PRRD - caméra', frame)
+                cv2.imshow('PRRD - caméra', resized_cropped_frame)
         else:
-            frame_zoom = frame
-            height, width, channels = frame_zoom.shape
-            #plus la variable Zoom est grande moins le zoom sera important
-            zoom = 99
             minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
             minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
 
@@ -122,12 +136,18 @@ if __name__ == '__main__':
                 cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
                 resized_cropped_frame = cv2.resize(cropped, (width, height))
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
+
             else : #Gère le zoom quand les postions sont négatives
                 minX, maxX = (positionZoom[0]), (positionZoom[2] + zoom * 2 / 3)
                 minY, maxY = (positionZoom[3]), (positionZoom[1] + zoom)
                 cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
                 resized_cropped_frame = cv2.resize(cropped, (width, height))
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
+
+            positionZoomSave[0] = minX
+            positionZoomSave[1] = maxY
+            positionZoomSave[2] = maxX
+            positionZoomSave[3] = minY
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
