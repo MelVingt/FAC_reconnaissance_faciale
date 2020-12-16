@@ -129,8 +129,11 @@ if __name__ == '__main__':
                 #cv2.imshow('PRRD - caméra', frame)
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
         else:
-            minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
+            #minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
             minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
+
+            #TAILLE DE LA FENETRE EN HUTEUR !
+            minX, maxX = 0, 500
 
             if minX >= zero and maxX >= zero and minY >= zero and maxY >= zero :
                 cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
@@ -138,8 +141,10 @@ if __name__ == '__main__':
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
             else : #Gère le zoom quand les postions sont négatives
-                minX, maxX = (positionZoom[0]), (positionZoom[2] + zoom * 2 / 3)
-                minY, maxY = (positionZoom[3]), (positionZoom[1] + zoom)
+                if minY < zero:
+                    minY = 0
+                if maxY < zero:
+                    maxY = 0
                 cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
                 resized_cropped_frame = cv2.resize(cropped, (width, height))
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
