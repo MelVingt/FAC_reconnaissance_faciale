@@ -148,7 +148,7 @@ if __name__ == '__main__':
             positionZoomSave[1] = maxY
             positionZoomSave[2] = maxX
             positionZoomSave[3] = minY
-
+            cv2.resizeWindow('PRRD - caméra', 500, 480)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     print('[INFO] Stop')
