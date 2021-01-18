@@ -6,7 +6,9 @@ from imutils import face_utils
 from pathlib import Path
 import os
 import ntpath
-
+from tkinter import *
+from tkinter import ttk
+import glob
 
 print('[INFO] Démarage Systeme...')
 print('[INFO] Import des modèles..')
@@ -14,7 +16,7 @@ pose_predictor_68_point = dlib.shape_predictor("pretrained_model/shape_predictor
 face_encoder = dlib.face_recognition_model_v1("pretrained_model/dlib_face_recognition_resnet_model_v1.dat")
 face_detector = dlib.get_frontal_face_detector()
 
-def reconnaisance_visage(frame, known_face_encodings, known_face_names):
+def reconnaisance_visage(frame, known_face_encodings, known_face_names,nom_enseigant):
     rgb_small_frame = frame[:, :, ::-1]
     # Enncodage du/des visage(s)
     face_encodings_list, face_locations_list, landmarks_list = vecteurs_visage(rgb_small_frame)
@@ -42,13 +44,13 @@ def reconnaisance_visage(frame, known_face_encodings, known_face_names):
 
     for (top, right, bottom, left), name in zip(face_locations_list, face_names):
         #Si le nom est "inconnu", le rectangle sera rouge sans nom
-        if name == "Inconnu":
-            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-        else:
+        if name == nom_enseigant:
             cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
             cv2.rectangle(frame, (left, bottom - 30), (right, bottom), (0, 255, 0), cv2.FILLED)
             cv2.putText(frame, name, (left + 2, bottom - 2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1)
             positionZoom = [top, right, bottom, left]
+        else:
+            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
 
     for shape in landmarks_list:
@@ -79,7 +81,7 @@ def transformation(image, face_locations):
     return coord_faces
 
 
-if __name__ == '__main__':
+def IMH_reconaissance_faciale(nom_enseigant):
     print('[INFO] Import des visages')
     face_to_encode_path = Path("visage")
     files = [file_ for file_ in face_to_encode_path.rglob('*.jpg')]
@@ -106,7 +108,7 @@ if __name__ == '__main__':
         ret, frame = video_capture.read()
         #enleve l'effect mirroir
         frame = cv2.flip(frame, 1)
-        positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names)
+        positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names, nom_enseigant)
         zero = 0
         # AFFICHAGE SANS SUIVI
         cv2.imshow('PRRD - caméra sans suivi ', frame)
@@ -115,6 +117,7 @@ if __name__ == '__main__':
 
         frame_zoom = frame
         height, width, channels = frame_zoom.shape
+
         # plus la variable Zoom est grande moins le zoom sera important
         zoom = 99
 
@@ -159,3 +162,67 @@ if __name__ == '__main__':
     print('[INFO] Stop')
     video_capture.release()
     cv2.destroyAllWindows()
+
+def choixEnseignant():
+    nom_enseigant = listeEnseigant.get()
+    print(nom_enseigant)
+    if nom_enseigant == "" :
+        return
+    else :
+        window.destroy()
+        IMH_reconaissance_faciale(nom_enseigant)
+
+if __name__ == '__main__':
+    ## IMH
+    window = Tk()
+
+    # personalisation de la fenetre
+    window.title("Suivi caméra")
+    # logo de la fenètre
+    # window.iconbitmap("logo.png")
+    window.geometry("700x500")
+    window.minsize(500, 480)
+
+    couleurBackground = '#F5F5DC'
+    couleurText = '#370028'
+
+    window.config(background=couleurBackground)
+
+    # frame
+    frame_gauche = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
+    frame_droite = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
+
+    # ajout des frame
+    frame_gauche.pack(side=LEFT)
+    frame_droite.pack(side=RIGHT)
+
+    # ajouter un text
+    # label_prof = Label(frame_text, text="Enseigant ", font=("Arial", 24), bg=couleurBackground, fg=couleurText)
+    # label_prof.pack(expand=TRUE)
+
+    # liste des ensigants
+
+    listeOptions = []
+    lesPhotos = glob.glob('visage\*.jpg')
+    for laPhoto in lesPhotos:
+        laPhoto = laPhoto.strip('.jpg')
+        laPhoto = laPhoto.strip('visage\%')
+        print(laPhoto + "\n")
+        listeOptions.append(laPhoto)
+
+    v = StringVar()
+    # v.set(listeOptions[0])
+    # listeEnseigant = OptionMenu(frame_gauche, v, *listeOptions)
+    # listeEnseigant.pack()
+
+    # TTK combobox
+    # v.set(listeOptions[0])
+    listeEnseigant = ttk.Combobox(frame_gauche, state="readonly", values=listeOptions)
+    listeEnseigant.pack()
+
+    # button
+    submit_button = Button(frame_droite, text='Valider', command=choixEnseignant)
+    submit_button.pack()
+
+    # afficher
+    window.mainloop()
