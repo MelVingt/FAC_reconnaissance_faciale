@@ -121,7 +121,9 @@ def IMH_reconaissance_faciale(nom_enseigant):
         # plus la variable Zoom est grande moins le zoom sera important
         zoom = 99
 
+        #Si le visage du prof n'est pas détecté
         if positionZoom[0] == zero and positionZoom[1] == zero and positionZoom[2] == zero and positionZoom[3] == zero :
+            #Démarage quand le visage du prof n'a encore été détecté
             if positionZoomSave[0] == zero and positionZoomSave[1] == zero and positionZoomSave[2] == zero and positionZoomSave[3] == zero :
                 cv2.imshow('PRRD - caméra', frame)
             else: #On zomm la ou la dernière fois le prof à été détecté
@@ -131,7 +133,9 @@ def IMH_reconaissance_faciale(nom_enseigant):
                 resized_cropped_frame = cv2.resize(cropped, (width, height))
                 #cv2.imshow('PRRD - caméra', frame)
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
-        else:
+
+        else: #si le visage du prof est détecté
+
             #minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
             minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
 
@@ -146,8 +150,10 @@ def IMH_reconaissance_faciale(nom_enseigant):
             else : #Gère le zoom quand les postions sont négatives
                 if minY < zero:
                     minY = 0
+                    #mixX = 99
                 if maxY < zero:
                     maxY = 0
+                    #maxX = 99
                 cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
                 resized_cropped_frame = cv2.resize(cropped, (width, height))
                 cv2.imshow('PRRD - caméra', resized_cropped_frame)
@@ -156,7 +162,9 @@ def IMH_reconaissance_faciale(nom_enseigant):
             positionZoomSave[1] = maxY
             positionZoomSave[2] = maxX
             positionZoomSave[3] = minY
+            #TAILLE DE LA FENETRE
             cv2.resizeWindow('PRRD - caméra', 500, 480)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     print('[INFO] Stop')
@@ -171,6 +179,17 @@ def choixEnseignant():
     else :
         window.destroy()
         IMH_reconaissance_faciale(nom_enseigant)
+
+def recuperationEnseignant() :
+    listeOptions = []
+    lesPhotos = glob.glob('visage\*.jpg')
+    for laPhoto in lesPhotos:
+        laPhoto = laPhoto.strip('.jpg')
+        laPhoto = laPhoto.strip('visage\%')
+        print(laPhoto + "\n")
+        listeOptions.append(laPhoto)
+
+    return listeOptions
 
 if __name__ == '__main__':
     ## IMH
@@ -202,13 +221,7 @@ if __name__ == '__main__':
 
     # liste des ensigants
 
-    listeOptions = []
-    lesPhotos = glob.glob('visage\*.jpg')
-    for laPhoto in lesPhotos:
-        laPhoto = laPhoto.strip('.jpg')
-        laPhoto = laPhoto.strip('visage\%')
-        print(laPhoto + "\n")
-        listeOptions.append(laPhoto)
+    listeOptions = recuperationEnseignant()
 
     v = StringVar()
     # v.set(listeOptions[0])
