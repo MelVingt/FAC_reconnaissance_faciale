@@ -104,69 +104,76 @@ def IMH_reconaissance_faciale(nom_enseigant):
     print('[INFO] Webcam démarrée')
 
     positionZoomSave = [0,0,0,0]
+    count = 0
+    positionZoom = [0,0,0,0]
     while True:
         ret, frame = video_capture.read()
-        #enleve l'effect mirroir
-        frame = cv2.flip(frame, 1)
-        positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names, nom_enseigant)
-        zero = 0
-        # AFFICHAGE SANS SUIVI
-        cv2.imshow('PRRD - caméra sans suivi ', frame)
+        
+        if(count%3==0):
+            #enleve l'effect mirroir
+            frame = cv2.flip(frame, 1)
+            positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names, nom_enseigant)
+            zero = 0
+            # AFFICHAGE SANS SUIVI
+            cv2.imshow('PRRD - caméra sans suivi', frame)
 
-        # SUIVI
+            # SUIVI
 
-        frame_zoom = frame
-        height, width, channels = frame_zoom.shape
+            frame_zoom = frame
+            height, width, channels = frame_zoom.shape
 
-        # plus la variable Zoom est grande moins le zoom sera important
-        zoom = 99
+            # plus la variable Zoom est grande moins le zoom sera important
+            zoom = 99
 
-        #Si le visage du prof n'est pas détecté
-        if positionZoom[0] == zero and positionZoom[1] == zero and positionZoom[2] == zero and positionZoom[3] == zero :
-            #Démarage quand le visage du prof n'a encore été détecté
-            if positionZoomSave[0] == zero and positionZoomSave[1] == zero and positionZoomSave[2] == zero and positionZoomSave[3] == zero :
-                cv2.imshow('PRRD - caméra', frame)
-            else: #On zomm la ou la dernière fois le prof à été détecté
-                minX, maxX = (positionZoomSave[0]), (positionZoomSave[2])
-                minY, maxY = (positionZoomSave[3]), (positionZoomSave[1])
-                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
-                resized_cropped_frame = cv2.resize(cropped, (width, height))
-                #cv2.imshow('PRRD - caméra', frame)
-                cv2.imshow('PRRD - caméra', resized_cropped_frame)
+            #Si le visage du prof n'est pas détecté
+            if positionZoom[0] == zero and positionZoom[1] == zero and positionZoom[2] == zero and positionZoom[3] == zero :
+                #Démarage quand le visage du prof n'a encore été détecté
+                if positionZoomSave[0] == zero and positionZoomSave[1] == zero and positionZoomSave[2] == zero and positionZoomSave[3] == zero :
+                    cv2.imshow('PRRD - caméra', frame)
+                else: #On zomm la ou la dernière fois le prof à été détecté
+                    minX, maxX = (positionZoomSave[0]), (positionZoomSave[2])
+                    minY, maxY = (positionZoomSave[3]), (positionZoomSave[1])
+                    cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                    resized_cropped_frame = cv2.resize(cropped, (width, height))
+                    #cv2.imshow('PRRD - caméra', frame)
+                    cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
-        else: #si le visage du prof est détecté
+            else: #si le visage du prof est détecté
 
-            #minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
-            minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
+                #minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
+                minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
 
-            #TAILLE DE LA FENETRE EN HUTEUR !
-            minX, maxX = 0, 500
+                #TAILLE DE LA FENETRE EN HUTEUR !
+                minX, maxX = 0, 500
 
-            if minX >= zero and maxX >= zero and minY >= zero and maxY >= zero :
-                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
-                resized_cropped_frame = cv2.resize(cropped, (width, height))
-                cv2.imshow('PRRD - caméra', resized_cropped_frame)
+                if minX >= zero and maxX >= zero and minY >= zero and maxY >= zero :
+                    cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                    resized_cropped_frame = cv2.resize(cropped, (width, height))
+                    cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
-            else : #Gère le zoom quand les postions sont négatives
-                if minY < zero:
-                    minY = 0
-                    #mixX = 99
-                if maxY < zero:
-                    maxY = 0
-                    #maxX = 99
-                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
-                resized_cropped_frame = cv2.resize(cropped, (width, height))
-                cv2.imshow('PRRD - caméra', resized_cropped_frame)
+                else : #Gère le zoom quand les postions sont négatives
+                    if minY < zero:
+                        minY = 0
+                        #mixX = 99
+                    if maxY < zero:
+                        maxY = 0
+                        #maxX = 99
+                    cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                    resized_cropped_frame = cv2.resize(cropped, (width, height))
+                    cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
-            positionZoomSave[0] = minX
-            positionZoomSave[1] = maxY
-            positionZoomSave[2] = maxX
-            positionZoomSave[3] = minY
-            #TAILLE DE LA FENETRE
-            cv2.resizeWindow('PRRD - caméra', 500, 480)
-
+                positionZoomSave[0] = minX
+                positionZoomSave[1] = maxY
+                positionZoomSave[2] = maxX
+                positionZoomSave[3] = minY
+                #TAILLE DE LA FENETRE
+                cv2.resizeWindow('PRRD - caméra', 500, 480)
+        if cv2.getWindowProperty('PRRD - caméra', 0) == -1 or cv2.getWindowProperty('PRRD - caméra sans suivi', 0) == -1:
+            break
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        count = count + 1
+
     print('[INFO] Stop')
     video_capture.release()
     cv2.destroyAllWindows()
