@@ -6,7 +6,7 @@ from imutils import face_utils
 from pathlib import Path
 import os
 import ntpath
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 import glob
 
@@ -189,7 +189,7 @@ def choixEnseignant():
     if nom_enseigant == "" :
         return
     else :
-        window.destroy()
+        root.destroy()
         IMH_reconaissance_faciale(nom_enseigant)
 
 def recuperationEnseignant() :
@@ -203,51 +203,163 @@ def recuperationEnseignant() :
 
     return listeOptions
 
+# if __name__ == '__main__':
+#     ## IMH
+#     window = Tk()
+#
+#     # personalisation de la fenetre
+#     window.title("Suivi caméra")
+#     # logo de la fenètre
+#     # window.iconbitmap("logo.png")
+#     window.geometry("700x500")
+#     window.minsize(500, 480)
+#
+#     couleurBackground = '#F5F5DC'
+#     couleurText = '#370028'
+#
+#     window.config(background=couleurBackground)
+#
+#     # frame
+#     frame_gauche = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
+#     frame_droite = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
+#
+#     # ajout des frame
+#     frame_gauche.pack(side=LEFT)
+#     frame_droite.pack(side=RIGHT)
+#
+#     # ajouter un text
+#     # label_prof = Label(frame_text, text="Enseigant ", font=("Arial", 24), bg=couleurBackground, fg=couleurText)
+#     # label_prof.pack(expand=TRUE)
+#
+#     # liste des ensigants
+#
+#     listeOptions = recuperationEnseignant()
+#
+#     v = StringVar()
+#     # v.set(listeOptions[0])
+#     # listeEnseigant = OptionMenu(frame_gauche, v, *listeOptions)
+#     # listeEnseigant.pack()
+#
+#     # TTK combobox
+#     # v.set(listeOptions[0])
+#     listeEnseigant = ttk.Combobox(frame_gauche, state="readonly", values=listeOptions)
+#     listeEnseigant.pack()
+#
+#     # button
+#     submit_button = Button(frame_droite, text='Valider', command=choixEnseignant)
+#     submit_button.pack()
+#
+#     # afficher
+#     window.mainloop()
+
+import sys
+
+
+def vp_start_gui():
+   '''Starting point when module is the main routine.'''
+   global val, w, root
+   global prog_location
+   prog_call = sys.argv[0]
+   prog_location = os.path.split(prog_call)[0]
+   root = tk.Tk()
+   top = Toplevel1 (root)
+   root.mainloop()
+
+def create_Toplevel1(rt, *args, **kwargs):
+   '''Starting point when module is imported by another module.
+      Correct form of call: 'create_Toplevel1(root, *args, **kwargs)' .'''
+   global w, w_win, root
+   global prog_location
+   prog_call = sys.argv[0]
+   prog_location = os.path.split(prog_call)[0]
+   #rt = root
+   root = rt
+   w = tk.Toplevel (root)
+   top = Toplevel1 (w)
+   return (w, top)
+
+def destroy_Toplevel1():
+   global w
+   root.destroy()
+   root = None
+
+class Toplevel1:
+   def __init__(self, top=None):
+       '''This class configures and populates the toplevel window.
+          top is the toplevel containing window.'''
+       _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
+       _fgcolor = '#000000'  # X11 color: 'black'
+       _compcolor = '#d9d9d9' # X11 color: 'gray85'
+       _ana1color = '#d9d9d9' # X11 color: 'gray85'
+       _ana2color = '#ececec' # Closest X11 color: 'gray92'
+       style = ttk.Style()
+       if sys.platform == "win32":
+           style.theme_use('winnative')
+       style.configure('.',background=_bgcolor)
+       style.configure('.',foreground=_fgcolor)
+       style.configure('.',font="TkDefaultFont")
+       style.map('.',background=
+           [('selected', _compcolor), ('active',_ana2color)])
+
+       top.geometry("600x450+468+138")
+       top.minsize(120, 1)
+       top.maxsize(1540, 845)
+       top.resizable(0,  0)
+       top.title("Suivi caméra")
+       top.configure(background="#d9d9d9")
+
+       Label1 = tk.Label(top)
+       Label1.place(x=230, y=60, height=151, width=154)
+       Label1.configure(background="#d9d9d9")
+       Label1.configure(disabledforeground="#a3a3a3")
+       Label1.configure(foreground="#000000")
+       photo_location = os.path.join(prog_location,"./pretrained_model/test.png")
+       global _img0
+       _img0 = tk.PhotoImage(file=photo_location)
+       Label1.configure(image=_img0)
+       Label1.configure(text='''Label''')
+
+       Label2 = tk.Label(top)
+       Label2.place(x=180, y=20, height=25, width=250)
+       Label2.configure(background="#d9d9d9")
+       Label2.configure(disabledforeground="#a3a3a3")
+       Label2.configure(foreground="#1150b9")
+       Label2.configure(highlightbackground="#f0f0f0f0f0f0")
+       Label2.configure(padx="150")
+       Label2.configure(pady="150")
+       Label2.configure(text='''Suivi Caméra : Outil pour enseignant''')
+
+       Label3 = tk.Label(top)
+       Label3.place(x=90, y=200, height=101, width=424)
+       Label3.configure(background="#d9d9d9")
+       Label3.configure(disabledforeground="#a3a3a3")
+       Label3.configure(foreground="#000000")
+       Label3.configure(text='''Vous devez sélectionner votre nom.\n S'il n'est pas présent ajouter une photo de photo nommé NomPrenom.jpg et réouvrez l'application''')
+       global listeEnseigant
+       listeEnseigant = ttk.Combobox(top)
+       listeEnseigant.place(x=190, y=280, height=21, width=233)
+       listeOptions = recuperationEnseignant()
+       listeEnseigant.configure(values=listeOptions)
+       listeEnseigant.configure(takefocus="")
+       tooltip_font = "TkDefaultFont"
+
+       TButton1 = ttk.Button(top)
+       TButton1.place(x=200, y=330, height=25, width=216)
+       TButton1.configure(command=choixEnseignant)
+       TButton1.configure(takefocus="")
+       TButton1.configure(text='''Lancer le suivi''')
+
+# ======================================================
+# Support code for Balloon Help (also called tooltips).
+# Found the original code at:
+# http://code.activestate.com/recipes/576688-tooltip-for-tkinter/
+# Modified by Rozen to remove Tkinter import statements and to receive
+# the font as an argument.
+# ======================================================
+
+
 if __name__ == '__main__':
-    ## IMH
-    window = Tk()
+   vp_start_gui()
 
-    # personalisation de la fenetre
-    window.title("Suivi caméra")
-    # logo de la fenètre
-    # window.iconbitmap("logo.png")
-    window.geometry("700x500")
-    window.minsize(500, 480)
 
-    couleurBackground = '#F5F5DC'
-    couleurText = '#370028'
 
-    window.config(background=couleurBackground)
-
-    # frame
-    frame_gauche = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
-    frame_droite = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
-
-    # ajout des frame
-    frame_gauche.pack(side=LEFT)
-    frame_droite.pack(side=RIGHT)
-
-    # ajouter un text
-    # label_prof = Label(frame_text, text="Enseigant ", font=("Arial", 24), bg=couleurBackground, fg=couleurText)
-    # label_prof.pack(expand=TRUE)
-
-    # liste des ensigants
-
-    listeOptions = recuperationEnseignant()
-
-    v = StringVar()
-    # v.set(listeOptions[0])
-    # listeEnseigant = OptionMenu(frame_gauche, v, *listeOptions)
-    # listeEnseigant.pack()
-
-    # TTK combobox
-    # v.set(listeOptions[0])
-    listeEnseigant = ttk.Combobox(frame_gauche, state="readonly", values=listeOptions)
-    listeEnseigant.pack()
-
-    # button
-    submit_button = Button(frame_droite, text='Valider', command=choixEnseignant)
-    submit_button.pack()
-
-    # afficher
-    window.mainloop()
