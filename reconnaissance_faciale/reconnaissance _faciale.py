@@ -95,7 +95,7 @@ def IMH_reconaissance_faciale(nom_enseigant):
     for file_ in files:
         print(file_)
 
-    known_face_names = [os.path.splitext(str(file_))[0] for file_ in files]
+    known_face_names = [os.path.splitext(str(file_).split("\\")[-1])[0] for file_ in files]
 
     known_face_encodings = []
     for file_ in files:
