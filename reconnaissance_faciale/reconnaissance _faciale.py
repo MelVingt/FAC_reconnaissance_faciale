@@ -349,14 +349,6 @@ class Toplevel1:
        TButton1.configure(takefocus="")
        TButton1.configure(text='''Lancer le suivi''')
 
-# ======================================================
-# Support code for Balloon Help (also called tooltips).
-# Found the original code at:
-# http://code.activestate.com/recipes/576688-tooltip-for-tkinter/
-# Modified by Rozen to remove Tkinter import statements and to receive
-# the font as an argument.
-# ======================================================
-
 
 if __name__ == '__main__':
    vp_start_gui()
