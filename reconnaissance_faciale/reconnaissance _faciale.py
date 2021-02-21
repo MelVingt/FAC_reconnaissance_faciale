@@ -90,14 +90,19 @@ def IMH_reconaissance_faciale(nom_enseigant):
         files.append(file_)
     if len(files)==0:
         raise ValueError('No faces detect in the directory: {}'.format(face_to_encode_path))
-    known_face_names = [os.path.splitext(ntpath.basename(file_))[0] for file_ in files]
+    
+
+    for file_ in files:
+        print(file_)
+
+    known_face_names = [os.path.splitext(str(file_))[0] for file_ in files]
 
     known_face_encodings = []
     for file_ in files:
         image = PIL.Image.open(file_)
         image = np.array(image)
         face_encoded = vecteurs_visage(image)[0][0]
-        known_face_encodings.append(face_encoded)
+        known_face_encodings.append(face_encoded) 
 
     print('[INFO] Démarrage Webcam')
     video_capture = cv2.VideoCapture(0)
