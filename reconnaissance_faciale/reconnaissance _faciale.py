@@ -341,6 +341,7 @@ class Toplevel1:
        listeOptions = recuperationEnseignant()
        listeEnseigant.configure(values=listeOptions)
        listeEnseigant.configure(takefocus="")
+       listeEnseigant.configure(state='readonly')
        tooltip_font = "TkDefaultFont"
 
        TButton1 = ttk.Button(top)
