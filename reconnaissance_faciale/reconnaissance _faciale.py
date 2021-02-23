@@ -6,7 +6,7 @@ from imutils import face_utils
 from pathlib import Path
 import os
 import ntpath
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 import glob
 
@@ -90,83 +90,95 @@ def IMH_reconaissance_faciale(nom_enseigant):
         files.append(file_)
     if len(files)==0:
         raise ValueError('No faces detect in the directory: {}'.format(face_to_encode_path))
-    known_face_names = [os.path.splitext(ntpath.basename(file_))[0] for file_ in files]
+    
+
+    for file_ in files:
+        print(file_)
+
+    known_face_names = [os.path.splitext(str(file_).split("\\")[-1])[0] for file_ in files]
 
     known_face_encodings = []
     for file_ in files:
         image = PIL.Image.open(file_)
         image = np.array(image)
         face_encoded = vecteurs_visage(image)[0][0]
-        known_face_encodings.append(face_encoded)
+        known_face_encodings.append(face_encoded) 
 
     print('[INFO] Démarrage Webcam')
     video_capture = cv2.VideoCapture(0)
     print('[INFO] Webcam démarrée')
 
     positionZoomSave = [0,0,0,0]
+    count = 0
+    positionZoom = [0,0,0,0]
     while True:
         ret, frame = video_capture.read()
-        #enleve l'effect mirroir
-        frame = cv2.flip(frame, 1)
-        positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names, nom_enseigant)
-        zero = 0
-        # AFFICHAGE SANS SUIVI
-        cv2.imshow('PRRD - caméra sans suivi ', frame)
+        
+        if(count%3==0):
+            #enleve l'effect mirroir
+            frame = cv2.flip(frame, 1)
+            positionZoom = reconnaisance_visage(frame, known_face_encodings, known_face_names, nom_enseigant)
+            zero = 0
+            # AFFICHAGE SANS SUIVI
+            cv2.imshow('PRRD - caméra sans suivi', frame)
 
-        # SUIVI
+            # SUIVI
 
-        frame_zoom = frame
-        height, width, channels = frame_zoom.shape
+            frame_zoom = frame
+            height, width, channels = frame_zoom.shape
 
-        # plus la variable Zoom est grande moins le zoom sera important
-        zoom = 99
+            # plus la variable Zoom est grande moins le zoom sera important
+            zoom = 99
 
-        #Si le visage du prof n'est pas détecté
-        if positionZoom[0] == zero and positionZoom[1] == zero and positionZoom[2] == zero and positionZoom[3] == zero :
-            #Démarage quand le visage du prof n'a encore été détecté
-            if positionZoomSave[0] == zero and positionZoomSave[1] == zero and positionZoomSave[2] == zero and positionZoomSave[3] == zero :
-                cv2.imshow('PRRD - caméra', frame)
-            else: #On zomm la ou la dernière fois le prof à été détecté
-                minX, maxX = (positionZoomSave[0]), (positionZoomSave[2])
-                minY, maxY = (positionZoomSave[3]), (positionZoomSave[1])
-                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
-                resized_cropped_frame = cv2.resize(cropped, (width, height))
-                #cv2.imshow('PRRD - caméra', frame)
-                cv2.imshow('PRRD - caméra', resized_cropped_frame)
+            #Si le visage du prof n'est pas détecté
+            if positionZoom[0] == zero and positionZoom[1] == zero and positionZoom[2] == zero and positionZoom[3] == zero :
+                #Démarage quand le visage du prof n'a encore été détecté
+                if positionZoomSave[0] == zero and positionZoomSave[1] == zero and positionZoomSave[2] == zero and positionZoomSave[3] == zero :
+                    cv2.imshow('PRRD - caméra', frame)
+                else: #On zomm la ou la dernière fois le prof à été détecté
+                    minX, maxX = (positionZoomSave[0]), (positionZoomSave[2])
+                    minY, maxY = (positionZoomSave[3]), (positionZoomSave[1])
+                    cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                    resized_cropped_frame = cv2.resize(cropped, (width, height))
+                    #cv2.imshow('PRRD - caméra', frame)
+                    cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
-        else: #si le visage du prof est détecté
+            else: #si le visage du prof est détecté
 
-            #minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
-            minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
+                #minX, maxX = (positionZoom[0]-zoom*2/3), (positionZoom[2]+zoom*2/3)
+                minY, maxY = (positionZoom[3]-zoom), (positionZoom[1]+zoom)
 
-            #TAILLE DE LA FENETRE EN HUTEUR !
-            minX, maxX = 0, 500
+                #TAILLE DE LA FENETRE EN HUTEUR !
+                minX, maxX = 0, 500
 
-            if minX >= zero and maxX >= zero and minY >= zero and maxY >= zero :
-                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
-                resized_cropped_frame = cv2.resize(cropped, (width, height))
-                cv2.imshow('PRRD - caméra', resized_cropped_frame)
+                if minX >= zero and maxX >= zero and minY >= zero and maxY >= zero :
+                    cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                    resized_cropped_frame = cv2.resize(cropped, (width, height))
+                    cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
-            else : #Gère le zoom quand les postions sont négatives
-                if minY < zero:
-                    minY = 0
-                    #mixX = 99
-                if maxY < zero:
-                    maxY = 0
-                    #maxX = 99
-                cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
-                resized_cropped_frame = cv2.resize(cropped, (width, height))
-                cv2.imshow('PRRD - caméra', resized_cropped_frame)
+                else : #Gère le zoom quand les postions sont négatives
+                    if minY < zero:
+                        minY = 0
+                        #mixX = 99
+                    if maxY < zero:
+                        maxY = 0
+                        #maxX = 99
+                    cropped = frame_zoom[int(minX):int(maxX), int(minY):int(maxY)]
+                    resized_cropped_frame = cv2.resize(cropped, (width, height))
+                    cv2.imshow('PRRD - caméra', resized_cropped_frame)
 
-            positionZoomSave[0] = minX
-            positionZoomSave[1] = maxY
-            positionZoomSave[2] = maxX
-            positionZoomSave[3] = minY
-            #TAILLE DE LA FENETRE
-            cv2.resizeWindow('PRRD - caméra', 500, 480)
-
+                positionZoomSave[0] = minX
+                positionZoomSave[1] = maxY
+                positionZoomSave[2] = maxX
+                positionZoomSave[3] = minY
+                #TAILLE DE LA FENETRE
+                cv2.resizeWindow('PRRD - caméra', 500, 480)
+        if cv2.getWindowProperty('PRRD - caméra', 0) == -1 or cv2.getWindowProperty('PRRD - caméra sans suivi', 0) == -1:
+            break
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        count = count + 1
+
     print('[INFO] Stop')
     video_capture.release()
     cv2.destroyAllWindows()
@@ -177,7 +189,7 @@ def choixEnseignant():
     if nom_enseigant == "" :
         return
     else :
-        window.destroy()
+        root.destroy()
         IMH_reconaissance_faciale(nom_enseigant)
 
 def recuperationEnseignant() :
@@ -191,51 +203,156 @@ def recuperationEnseignant() :
 
     return listeOptions
 
+# if __name__ == '__main__':
+#     ## IMH
+#     window = Tk()
+#
+#     # personalisation de la fenetre
+#     window.title("Suivi caméra")
+#     # logo de la fenètre
+#     # window.iconbitmap("logo.png")
+#     window.geometry("700x500")
+#     window.minsize(500, 480)
+#
+#     couleurBackground = '#F5F5DC'
+#     couleurText = '#370028'
+#
+#     window.config(background=couleurBackground)
+#
+#     # frame
+#     frame_gauche = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
+#     frame_droite = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
+#
+#     # ajout des frame
+#     frame_gauche.pack(side=LEFT)
+#     frame_droite.pack(side=RIGHT)
+#
+#     # ajouter un text
+#     # label_prof = Label(frame_text, text="Enseigant ", font=("Arial", 24), bg=couleurBackground, fg=couleurText)
+#     # label_prof.pack(expand=TRUE)
+#
+#     # liste des ensigants
+#
+#     listeOptions = recuperationEnseignant()
+#
+#     v = StringVar()
+#     # v.set(listeOptions[0])
+#     # listeEnseigant = OptionMenu(frame_gauche, v, *listeOptions)
+#     # listeEnseigant.pack()
+#
+#     # TTK combobox
+#     # v.set(listeOptions[0])
+#     listeEnseigant = ttk.Combobox(frame_gauche, state="readonly", values=listeOptions)
+#     listeEnseigant.pack()
+#
+#     # button
+#     submit_button = Button(frame_droite, text='Valider', command=choixEnseignant)
+#     submit_button.pack()
+#
+#     # afficher
+#     window.mainloop()
+
+import sys
+
+
+def vp_start_gui():
+   '''Starting point when module is the main routine.'''
+   global val, w, root
+   global prog_location
+   prog_call = sys.argv[0]
+   prog_location = os.path.split(prog_call)[0]
+   root = tk.Tk()
+   top = Toplevel1 (root)
+   root.mainloop()
+
+def create_Toplevel1(rt, *args, **kwargs):
+   '''Starting point when module is imported by another module.
+      Correct form of call: 'create_Toplevel1(root, *args, **kwargs)' .'''
+   global w, w_win, root
+   global prog_location
+   prog_call = sys.argv[0]
+   prog_location = os.path.split(prog_call)[0]
+   #rt = root
+   root = rt
+   w = tk.Toplevel (root)
+   top = Toplevel1 (w)
+   return (w, top)
+
+def destroy_Toplevel1():
+   global w
+   root.destroy()
+   root = None
+
+class Toplevel1:
+   def __init__(self, top=None):
+       '''This class configures and populates the toplevel window.
+          top is the toplevel containing window.'''
+       _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
+       _fgcolor = '#000000'  # X11 color: 'black'
+       _compcolor = '#d9d9d9' # X11 color: 'gray85'
+       _ana1color = '#d9d9d9' # X11 color: 'gray85'
+       _ana2color = '#ececec' # Closest X11 color: 'gray92'
+       style = ttk.Style()
+       if sys.platform == "win32":
+           style.theme_use('winnative')
+       style.configure('.',background=_bgcolor)
+       style.configure('.',foreground=_fgcolor)
+       style.configure('.',font="TkDefaultFont")
+       style.map('.',background=
+           [('selected', _compcolor), ('active',_ana2color)])
+
+       top.geometry("600x450+468+138")
+       top.minsize(120, 1)
+       top.maxsize(1540, 845)
+       top.resizable(0,  0)
+       top.title("Suivi caméra")
+       top.configure(background="#d9d9d9")
+
+       Label1 = tk.Label(top)
+       Label1.place(x=230, y=60, height=151, width=154)
+       Label1.configure(background="#d9d9d9")
+       Label1.configure(disabledforeground="#a3a3a3")
+       Label1.configure(foreground="#000000")
+       photo_location = os.path.join(prog_location,"./pretrained_model/test.png")
+       global _img0
+       _img0 = tk.PhotoImage(file=photo_location)
+       Label1.configure(image=_img0)
+       Label1.configure(text='''Label''')
+
+       Label2 = tk.Label(top)
+       Label2.place(x=180, y=20, height=25, width=250)
+       Label2.configure(background="#d9d9d9")
+       Label2.configure(disabledforeground="#a3a3a3")
+       Label2.configure(foreground="#1150b9")
+       Label2.configure(highlightbackground="#f0f0f0f0f0f0")
+       Label2.configure(padx="150")
+       Label2.configure(pady="150")
+       Label2.configure(text='''Suivi Caméra : Outil pour enseignant''')
+
+       Label3 = tk.Label(top)
+       Label3.place(x=90, y=200, height=101, width=424)
+       Label3.configure(background="#d9d9d9")
+       Label3.configure(disabledforeground="#a3a3a3")
+       Label3.configure(foreground="#000000")
+       Label3.configure(text='''Vous devez sélectionner votre nom.\n S'il n'est pas présent ajouter une photo de photo nommé NomPrenom.jpg et réouvrez l'application''')
+       global listeEnseigant
+       listeEnseigant = ttk.Combobox(top)
+       listeEnseigant.place(x=190, y=280, height=21, width=233)
+       listeOptions = recuperationEnseignant()
+       listeEnseigant.configure(values=listeOptions)
+       listeEnseigant.configure(takefocus="")
+       listeEnseigant.configure(state='readonly')
+       tooltip_font = "TkDefaultFont"
+
+       TButton1 = ttk.Button(top)
+       TButton1.place(x=200, y=330, height=25, width=216)
+       TButton1.configure(command=choixEnseignant)
+       TButton1.configure(takefocus="")
+       TButton1.configure(text='''Lancer le suivi''')
+
+
 if __name__ == '__main__':
-    ## IMH
-    window = Tk()
+   vp_start_gui()
 
-    # personalisation de la fenetre
-    window.title("Suivi caméra")
-    # logo de la fenètre
-    # window.iconbitmap("logo.png")
-    window.geometry("700x500")
-    window.minsize(500, 480)
 
-    couleurBackground = '#F5F5DC'
-    couleurText = '#370028'
 
-    window.config(background=couleurBackground)
-
-    # frame
-    frame_gauche = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
-    frame_droite = Frame(window, bg=couleurBackground, bd=1, relief=SUNKEN)
-
-    # ajout des frame
-    frame_gauche.pack(side=LEFT)
-    frame_droite.pack(side=RIGHT)
-
-    # ajouter un text
-    # label_prof = Label(frame_text, text="Enseigant ", font=("Arial", 24), bg=couleurBackground, fg=couleurText)
-    # label_prof.pack(expand=TRUE)
-
-    # liste des ensigants
-
-    listeOptions = recuperationEnseignant()
-
-    v = StringVar()
-    # v.set(listeOptions[0])
-    # listeEnseigant = OptionMenu(frame_gauche, v, *listeOptions)
-    # listeEnseigant.pack()
-
-    # TTK combobox
-    # v.set(listeOptions[0])
-    listeEnseigant = ttk.Combobox(frame_gauche, state="readonly", values=listeOptions)
-    listeEnseigant.pack()
-
-    # button
-    submit_button = Button(frame_droite, text='Valider', command=choixEnseignant)
-    submit_button.pack()
-
-    # afficher
-    window.mainloop()
